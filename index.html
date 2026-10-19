@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品展示頁面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --container-max: 1200px;
+            --sidebar-width: 400px;
+            --space-page: 16px;
+            --grid-gap: 12px;
+            --product-cols: 1;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: var(--container-max);
+            margin: 0 auto;
+            background-color: white;
+            padding: var(--space-page);
+            min-height: 100vh;
+        }
+
+        .header {
+            background-color: #333;
+            color: white;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            line-height: 1.3;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .cart-icon {
+            flex-shrink: 0;
+            cursor: pointer;
+            background-color: #ff6b6b;
+            padding: 10px 12px;
+            border-radius: 5px;
+            position: relative;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #fff;
+            color: #ff6b6b;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(var(--product-cols), minmax(0, 1fr));
+            gap: var(--grid-gap);
+            margin-bottom: 24px;
+        }
+
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            min-width: 0;
+        }
+
+        @media (hover: hover) {
+            .product-card:hover {
+                transform: translateY(-2px);
+            }
+        }
+
+        .product-image {
+            width: 100%;
+            height: 160px;
+            aspect-ratio: 4 / 3;
+            max-height: 220px;
+            background-color: #eee;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .product-title {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            word-break: break-word;
+        }
+
+        .product-price {
+            font-size: 1.125rem;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .add-to-cart-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+        }
+        
+        .add-to-cart-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: calc(-1 * var(--sidebar-width));
+            width: var(--sidebar-width);
+            max-width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            background-color: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            padding: 16px;
+            padding-top: max(16px, env(safe-area-inset-top));
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-sidebar.open {
+            right: 0;
+        }
+
+        #cartItems {
+            flex: 1;
+            min-height: 0;
+        }
+
+        .cart-total {
+            flex-shrink: 0;
+        }
+        
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+        }
+        
+        .close-cart {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .cart-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            gap: 10px;
+        }
+        
+        .cart-item-image {
+            width: 56px;
+            height: 56px;
+            flex-shrink: 0;
+            background-color: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .cart-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .cart-item-details {
+            flex: 1;
+        }
+        
+        .cart-item-title {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .cart-item-price {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+        
+        .quantity-btn {
+            background-color: #f0f0f0;
+            border: none;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quantity-display {
+            margin: 0 10px;
+            font-weight: bold;
+        }
+        
+        .cart-total {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+        
+        .total-price {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+        
+        .checkout-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            margin-top: 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+        
+        /* Phone: default (max 767px) — 1 column, full-width cart */
+        @media (max-width: 767px) {
+            .cart-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+
+            .quantity-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+
+            .cart-icon .cart-label {
+                display: none;
+            }
+
+            .empty-state {
+                padding: 32px 16px;
+                font-size: 15px;
+            }
+        }
+
+        .modal-actions {
+            flex-direction: column-reverse;
+        }
+
+        .modal-actions .modal-btn {
+            width: 100%;
+        }
+
+        #toastContainer {
+            left: 16px;
+            right: 16px;
+            bottom: max(16px, env(safe-area-inset-bottom));
+        }
+
+        .toast {
+            text-align: center;
+        }
+
+        /* Tablet: 768px – 1023px — 2 columns */
+        @media (min-width: 768px) {
+            :root {
+                --product-cols: 2;
+                --grid-gap: 16px;
+                --space-page: 20px;
+                --sidebar-width: 360px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .product-image {
+                height: 180px;
+            }
+
+            .product-title {
+                font-size: 1.0625rem;
+            }
+
+            .modal-actions {
+                flex-direction: row;
+            }
+
+            .modal-actions .modal-btn {
+                width: auto;
+            }
+
+            #toastContainer {
+                left: auto;
+                right: 24px;
+                bottom: 24px;
+            }
+
+            .toast {
+                text-align: left;
+            }
+        }
+
+        /* PC / Laptop: 1024px+ — 3–4 columns, wider layout */
+        @media (min-width: 1024px) {
+            :root {
+                --product-cols: 3;
+                --grid-gap: 20px;
+                --space-page: 24px;
+                --sidebar-width: 400px;
+            }
+
+            .header {
+                padding: 20px 24px;
+                margin-bottom: 30px;
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
+
+            .cart-icon {
+                padding: 10px 16px;
+                font-size: 15px;
+            }
+
+            .product-card {
+                padding: 15px;
+            }
+
+            .product-image {
+                height: 200px;
+            }
+
+            .product-title {
+                font-size: 1.125rem;
+            }
+
+            .product-price {
+                font-size: 1.25rem;
+            }
+
+            .cart-sidebar {
+                padding: 20px;
+            }
+
+            .cart-item-image {
+                width: 60px;
+                height: 60px;
+            }
+
+            .total-price {
+                font-size: 1.5rem;
+            }
+
+            .search-bar input {
+                max-width: 420px;
+            }
+        }
+
+        @media (min-width: 1280px) {
+            :root {
+                --product-cols: 4;
+            }
+        }
+
+        .search-bar {
+            margin-bottom: 24px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 48px 20px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .products-section {
+            margin-bottom: 24px;
+        }
+
+        .load-more-wrap {
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .load-more-wrap[hidden] {
+            display: none;
+        }
+
+        .load-more-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            min-width: 160px;
+        }
+
+        .load-more-btn:hover {
+            background-color: #444;
+        }
+
+        .cart-qty-summary {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .remove-item-btn {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 6px;
+            padding: 0;
+            text-decoration: underline;
+        }
+
+        .remove-item-btn:hover {
+            color: #ff6b6b;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            line-height: 1;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            padding-right: 28px;
+        }
+
+        .modal-body {
+            color: #555;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .modal-btn-cancel {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .modal-btn-confirm {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            background: #ee5a5a;
+        }
+
+        .modal-btn-confirm.danger {
+            background: #c0392b;
+        }
+
+        #toastContainer {
+            position: fixed;
+            z-index: 3000;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: #333;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            font-size: 14px;
+            animation: toastIn 0.25s ease;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>精品商店</h1>
+            <div class="cart-icon" onclick="toggleCart()">
+                🛒 <span class="cart-label">購物車</span>
+                <div class="cart-count" id="cartCount">0</div>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">載入中...</div>
+
+        <div class="search-bar">
+            <input type="search" id="searchInput" placeholder="搜尋商品名稱..." autocomplete="off">
+        </div>
+        
+        <div class="products-section">
+            <div class="products-grid" id="productsGrid">
+                <!-- 產品會通過 JavaScript 動態載入 -->
+            </div>
+            <div class="load-more-wrap" id="loadMoreWrap" hidden>
+                <button type="button" class="load-more-btn" id="loadMoreBtn">載入更多</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 購物車側邊欄 -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2>購物車</h2>
+            <button class="close-cart" onclick="toggleCart()">×</button>
+        </div>
+        <div id="cartItems">
+            <p style="text-align: center; color: #999; margin-top: 50px;">購物車是空的</p>
+        </div>
+        <div class="cart-total">
+            <div class="cart-qty-summary">商品總數量: <span id="cartTotalQty">0</span> 件</div>
+            <div class="total-price">總計: NT$ <span id="totalPrice">0</span></div>
+            <button class="checkout-btn" onclick="openCheckoutModal()">結帳</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <button type="button" class="modal-close" id="modalCloseBtn" aria-label="關閉">×</button>
+            <h3 class="modal-title" id="modalTitle">確認</h3>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-cancel" id="modalCancelBtn">取消</button>
+                <button type="button" class="modal-btn modal-btn-confirm" id="modalConfirmBtn">確認</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+    
+    <script>
+        var products = [];
+        var cart = [];
+        var isLoading = false;
+        var searchKeyword = '';
+        var modalMode = null;
+        var pendingRemoveProductId = null;
+        var toastHideTimer = null;
+        var PRODUCTS_PAGE_SIZE = 8;
+        var visibleProductCount = PRODUCTS_PAGE_SIZE;
+        var currentProductList = [];
+
+        var NO_PRODUCT_IMAGE = 'no-product.jpg';
+
+        var DUMMY_PRODUCTS = [
+            { id: 1, name: '無線藍牙耳機', price: 2999, image: 'earphones.jpg' },
+            { id: 2, name: '智慧手錶', price: 8999, image: 'smartwatch.jpg' },
+            { id: 3, name: '便攜式充電器', price: 1299, image: 'powerbank.jpg' },
+            { id: 4, name: '無線滑鼠', price: 899, image: 'mouse.jpg' },
+            { id: 5, name: '機械鍵盤', price: 3999, image: 'keyboard.jpg' },
+            { id: 6, name: '網路攝影機', price: 2199, image: 'webcam.jpg' },
+            { id: 7, name: 'USB隨身碟', price: 599, image: 'usb.jpg' },
+            { id: 8, name: '桌面擴音器', price: 1599, image: 'speaker.jpg' },
+            { id: 9, name: '平板電腦支架', price: 799, image: 'tablet-stand.jpg' },
+            { id: 10, name: 'HDMI 傳輸線', price: 499, image: 'hdmi-cable.jpg' },
+            { id: 11, name: '筆電散熱墊', price: 1899, image: 'laptop-cooler.jpg' },
+            { id: 12, name: '迷你藍牙喇叭', price: 2499, image: 'mini-speaker.jpg' }
+        ];
+
+        function normalizeProductId(id) {
+            var n = Number(id);
+            return isNaN(n) ? id : n;
+        }
+
+        function findProductById(productId) {
+            var id = normalizeProductId(productId);
+            for (var i = 0; i < products.length; i++) {
+                if (normalizeProductId(products[i].id) === id) {
+                    return products[i];
+                }
+            }
+            return null;
+        }
+
+        function findCartIndexByProductId(productId) {
+            var id = normalizeProductId(productId);
+            for (var i = 0; i < cart.length; i++) {
+                if (normalizeProductId(cart[i].productId) === id) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        function getCartTotals() {
+            var totalQty = 0;
+            var totalPrice = 0;
+            for (var i = 0; i < cart.length; i++) {
+                totalQty += cart[i].quantity;
+                totalPrice += cart[i].product.price * cart[i].quantity;
+            }
+            return { totalQty: totalQty, totalPrice: totalPrice, lineCount: cart.length };
+        }
+
+        function loadProducts() {
+            isLoading = true;
+            document.getElementById('loading').style.display = 'block';
+
+            setTimeout(function() {
+                var fetched = [];
+                products = fetched.length > 0 ? fetched : DUMMY_PRODUCTS.slice();
+
+                renderProductList(getFilteredProducts());
+                document.getElementById('loading').style.display = 'none';
+                isLoading = false;
+            }, 1500);
+        }
+
+        function getFilteredProducts() {
+            var kw = (searchKeyword || '').trim().toLowerCase();
+            if (!kw) {
+                return products.slice();
+            }
+            var filtered = [];
+            for (var i = 0; i < products.length; i++) {
+                if (products[i].name.toLowerCase().indexOf(kw) !== -1) {
+                    filtered.push(products[i]);
+                }
+            }
+            return filtered;
+        }
+
+        function renderProductList(list, resetVisible) {
+            if (resetVisible !== false) {
+                visibleProductCount = Math.min(PRODUCTS_PAGE_SIZE, list.length);
+            }
+            currentProductList = list;
+
+            var grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+
+            if (list.length === 0) {
+                updateLoadMoreButton();
+                var empty = document.createElement('div');
+                empty.className = 'empty-state';
+                empty.textContent = searchKeyword.trim()
+                    ? '找不到符合「' + searchKeyword.trim() + '」的商品'
+                    : '目前沒有商品';
+                grid.appendChild(empty);
+                return;
+            }
+
+            var end = Math.min(visibleProductCount, list.length);
+            for (var i = 0; i < end; i++) {
+                grid.appendChild(createProductCard(list[i]));
+            }
+            updateLoadMoreButton();
+        }
+
+        function updateLoadMoreButton() {
+            var wrap = document.getElementById('loadMoreWrap');
+            wrap.hidden = currentProductList.length <= PRODUCTS_PAGE_SIZE;
+        }
+
+        function loadMoreProducts() {
+            var total = currentProductList.length;
+            if (visibleProductCount >= total) {
+                showToast('已無更多商品');
+                return;
+            }
+            visibleProductCount = Math.min(visibleProductCount + PRODUCTS_PAGE_SIZE, total);
+            renderProductList(currentProductList, false);
+        }
+
+        function createProductCard(product) {
+            var productCard = document.createElement('div');
+            productCard.className = 'product-card';
+            productCard.innerHTML =
+                '<div class="product-image">' + buildProductImageTag(product) + '</div>' +
+                '<div class="product-title">' + escapeHtml(product.name) + '</div>' +
+                '<div class="product-price">NT$ ' + product.price + '</div>' +
+                '<button type="button" class="add-to-cart-btn" data-product-id="' + product.id + '">加入購物車</button>';
+            return productCard;
+        }
+
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function escapeAttr(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;');
+        }
+
+        function getProductImageSrc(product) {
+            if (product && product.image && String(product.image).trim()) {
+                return String(product.image).trim();
+            }
+            return NO_PRODUCT_IMAGE;
+        }
+
+        function handleProductImageError(img) {
+            if (img.getAttribute('data-fallback') === '1') {
+                return;
+            }
+            img.setAttribute('data-fallback', '1');
+            img.onerror = null;
+            img.src = NO_PRODUCT_IMAGE;
+        }
+
+        function buildProductImageTag(product) {
+            var src = getProductImageSrc(product);
+            return '<img src="' + escapeAttr(src) + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleProductImageError(this)">';
+        }
+
+        function searchProducts(keyword) {
+            searchKeyword = keyword;
+            renderProductList(getFilteredProducts());
+        }
+
+        function addToCart(productId) {
+            var id = normalizeProductId(productId);
+            var product = findProductById(id);
+            if (!product) return;
+
+            var idx = findCartIndexByProductId(id);
+            if (idx >= 0) {
+                cart[idx].quantity += 1;
+            } else {
+                cart.push({
+                    productId: id,
+                    product: product,
+                    quantity: 1
+                });
+            }
+
+            updateCartDisplay();
+            showToast('已加入購物車：' + product.name);
+        }
+
+        function removeFromCart(productId) {
+            var idx = findCartIndexByProductId(productId);
+            if (idx >= 0) {
+                cart.splice(idx, 1);
+                updateCartDisplay();
+            }
+        }
+
+        function openRemoveModal(productId) {
+            var product = findProductById(productId);
+            var idx = findCartIndexByProductId(productId);
+            if (idx < 0 || !product) return;
+
+            pendingRemoveProductId = normalizeProductId(productId);
+            modalMode = 'remove';
+            document.getElementById('modalTitle').textContent = '移除商品';
+            document.getElementById('modalBody').innerHTML =
+                '確定要從購物車移除「' + escapeHtml(product.name) + '」嗎？<br>目前數量：' + cart[idx].quantity + ' 件';
+            var confirmBtn = document.getElementById('modalConfirmBtn');
+            confirmBtn.textContent = '移除';
+            confirmBtn.classList.add('danger');
+            openModal();
+        }
+
+        function updateQuantity(productId, change) {
+            var idx = findCartIndexByProductId(productId);
+            if (idx < 0) return;
+
+            cart[idx].quantity += change;
+            if (cart[idx].quantity <= 0) {
+                cart.splice(idx, 1);
+            }
+            updateCartDisplay();
+        }
+
+        function updateCartDisplay() {
+            var cartCountEl = document.getElementById('cartCount');
+            var cartItems = document.getElementById('cartItems');
+            var totalPriceEl = document.getElementById('totalPrice');
+            var cartTotalQtyEl = document.getElementById('cartTotalQty');
+            var totals = getCartTotals();
+
+            cartCountEl.textContent = totals.totalQty;
+            cartTotalQtyEl.textContent = totals.totalQty;
+            totalPriceEl.textContent = totals.totalPrice;
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p style="text-align: center; color: #999; margin-top: 50px;">購物車是空的</p>';
+            } else {
+                var itemsHTML = '';
+                for (var i = 0; i < cart.length; i++) {
+                    var item = cart[i];
+                    var pid = item.productId;
+                    itemsHTML +=
+                        '<div class="cart-item">' +
+                            '<div class="cart-item-image">' + buildProductImageTag(item.product) + '</div>' +
+                            '<div class="cart-item-details">' +
+                                '<div class="cart-item-title">' + escapeHtml(item.product.name) + '</div>' +
+                                '<div class="cart-item-price">NT$ ' + item.product.price + '</div>' +
+                                '<div class="quantity-controls">' +
+                                    '<button type="button" class="quantity-btn" data-qty-change="-1" data-product-id="' + pid + '">-</button>' +
+                                    '<span class="quantity-display">' + item.quantity + '</span>' +
+                                    '<button type="button" class="quantity-btn" data-qty-change="1" data-product-id="' + pid + '">+</button>' +
+                                '</div>' +
+                                '<button type="button" class="remove-item-btn" data-remove-id="' + pid + '">移除此商品</button>' +
+                            '</div>' +
+                        '</div>';
+                }
+                cartItems.innerHTML = itemsHTML;
+            }
+        }
+
+        function toggleCart() {
+            var sidebar = document.getElementById('cartSidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        function openCheckoutModal() {
+            if (cart.length === 0) {
+                showToast('購物車是空的');
+                return;
+            }
+            var totals = getCartTotals();
+            modalMode = 'checkout';
+            pendingRemoveProductId = null;
+            document.getElementById('modalTitle').textContent = '確認結帳';
+            document.getElementById('modalBody').innerHTML =
+                '商品總數量：<strong>' + totals.totalQty + '</strong> 件<br>' +
+                '應付總額：<strong>NT$ ' + totals.totalPrice + '</strong><br><br>' +
+                '確定要結帳嗎？';
+            var confirmBtn = document.getElementById('modalConfirmBtn');
+            confirmBtn.textContent = '確認結帳';
+            confirmBtn.classList.remove('danger');
+            openModal();
+        }
+
+        function confirmCheckout() {
+            closeModal();
+            showToast('結帳成功！感謝您的購買。');
+            cart = [];
+            updateCartDisplay();
+            var sidebar = document.getElementById('cartSidebar');
+            if (sidebar.classList.contains('open')) {
+                toggleCart();
+            }
+        }
+
+        function openModal() {
+            var overlay = document.getElementById('modalOverlay');
+            overlay.classList.add('open');
+            overlay.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeModal() {
+            var overlay = document.getElementById('modalOverlay');
+            overlay.classList.remove('open');
+            overlay.setAttribute('aria-hidden', 'true');
+            modalMode = null;
+            pendingRemoveProductId = null;
+        }
+
+        function onModalConfirm() {
+            if (modalMode === 'checkout') {
+                confirmCheckout();
+            } else if (modalMode === 'remove' && pendingRemoveProductId != null) {
+                removeFromCart(pendingRemoveProductId);
+                showToast('已從購物車移除商品');
+                closeModal();
+            }
+        }
+
+        function showToast(message) {
+            var container = document.getElementById('toastContainer');
+            container.innerHTML = '';
+            if (toastHideTimer) {
+                clearTimeout(toastHideTimer);
+                toastHideTimer = null;
+            }
+            var toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            container.appendChild(toast);
+            toastHideTimer = setTimeout(function() {
+                container.innerHTML = '';
+                toastHideTimer = null;
+            }, 3000);
+        }
+        
+        // 問題13: 沒有事件委託，每個按鈕都綁定事件
+        // 問題14: 沒有防抖機制的 resize 事件
+        window.addEventListener('resize', function() {
+            // 每次 resize 都執行，沒有防抖
+            console.log('視窗大小改變');
+        });
+        
+        window.addEventListener('load', function() {
+            loadProducts();
+
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                searchProducts(e.target.value);
+            });
+
+            document.getElementById('loadMoreBtn').addEventListener('click', loadMoreProducts);
+
+            document.getElementById('productsGrid').addEventListener('click', function(e) {
+                var btn = e.target.closest('.add-to-cart-btn');
+                if (btn && btn.dataset.productId) {
+                    addToCart(btn.dataset.productId);
+                }
+            });
+
+            document.getElementById('cartItems').addEventListener('click', function(e) {
+                var qtyBtn = e.target.closest('[data-qty-change]');
+                if (qtyBtn) {
+                    updateQuantity(qtyBtn.dataset.productId, Number(qtyBtn.dataset.qtyChange));
+                    return;
+                }
+                var removeBtn = e.target.closest('[data-remove-id]');
+                if (removeBtn) {
+                    openRemoveModal(removeBtn.dataset.removeId);
+                }
+            });
+
+            document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+            document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+            document.getElementById('modalConfirmBtn').addEventListener('click', onModalConfirm);
+            document.getElementById('modalOverlay').addEventListener('click', function(e) {
+                if (e.target.id === 'modalOverlay') {
+                    closeModal();
+                }
+            });
+            document.querySelector('.modal-box').addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('cart-icon') ||
+                e.target.closest('.cart-icon')) {
+                return;
+            }
+
+            if (e.target.closest('.cart-sidebar')) {
+                return;
+            }
+
+            if (e.target.closest('#modalOverlay')) {
+                return;
+            }
+
+            var sidebar = document.getElementById('cartSidebar');
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html> 
